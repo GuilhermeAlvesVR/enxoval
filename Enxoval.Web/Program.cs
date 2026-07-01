@@ -17,8 +17,7 @@ if (!string.IsNullOrEmpty(databaseUrl))
         Database = uri.AbsolutePath.TrimStart('/'),
         Username = userInfo[0],
         Password = userInfo[1],
-        SslMode = Npgsql.SslMode.Require,
-        TrustServerCertificate = true
+        SslMode = Npgsql.SslMode.Require
     }.ConnectionString;
 
     builder.Services.AddDbContext<AppDbContext>(o =>
@@ -38,8 +37,8 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
 }
 
+app.UseStaticFiles();
 app.UseRouting();
-app.MapStaticAssets();
-app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}").WithStaticAssets();
+app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
