@@ -10,17 +10,22 @@ if (!string.IsNullOrEmpty(databaseUrl))
 {
     var uri = new Uri(databaseUrl);
     var userInfo = uri.UserInfo.Split(':');
-    var addresses = System.Net.Dns.GetHostAddresses(uri.Host);
-    var ipv4 = addresses.FirstOrDefault(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
-    var connString = new Npgsql.NpgsqlConnectionStringBuilder
+    try
     {
-        Host = ipv4?.ToString() ?? uri.Host,
-        Port = uri.Port,
+        var entry = System.Net.Dns.GetHostEntry(uri.Host, System.Net.Sockets.AddressFamily.InterNetwork);
+        uri = new UriBuilder(uri) { Host = entry.AddressList[0].ToString() }.Uri;
+    }
+    catch { }
+    var builder_ = new Npgsql.NpgsqlConnectionStringBuilder
+    {
+        Host = uri.Host,
         Database = uri.AbsolutePath.TrimStart('/'),
         Username = userInfo[0],
         Password = userInfo[1],
         SslMode = Npgsql.SslMode.Require
-    }.ConnectionString;
+    };
+    if (uri.Port > 0) builder_.Port = uri.Port;
+    var connString = builder_.ConnectionString;
 
     builder.Services.AddDbContext<AppDbContext>(o =>
         o.UseNpgsql(connString));
