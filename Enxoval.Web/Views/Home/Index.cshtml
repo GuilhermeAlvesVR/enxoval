@@ -21,10 +21,6 @@
         </div>
 
         <div class="form-row">
-            <input type="url" name="imagemUrl" placeholder="Link da imagem (opcional)" class="input-full">
-        </div>
-
-        <div class="form-row">
             <select name="categoriaId" class="input-full">
                 <option value="">Sem categoria</option>
                 @foreach (var cat in categorias)
@@ -39,19 +35,16 @@
                 <span class="link-num">1</span>
                 <input type="text" name="loja1" placeholder="Loja" class="input-loja">
                 <input type="url" name="url1" placeholder="Link do produto" required class="input-url">
-                <input type="text" name="preco1" placeholder="R$ 0,00" class="input-price" inputmode="decimal">
             </div>
             <div class="link-row">
                 <span class="link-num">2</span>
                 <input type="text" name="loja2" placeholder="Loja" class="input-loja">
                 <input type="url" name="url2" placeholder="Outra opção (opcional)" class="input-url">
-                <input type="text" name="preco2" placeholder="R$ 0,00" class="input-price" inputmode="decimal">
             </div>
             <div class="link-row">
                 <span class="link-num">3</span>
                 <input type="text" name="loja3" placeholder="Loja" class="input-loja">
                 <input type="url" name="url3" placeholder="Mais uma opção (opcional)" class="input-url">
-                <input type="text" name="preco3" placeholder="R$ 0,00" class="input-price" inputmode="decimal">
             </div>
         </div>
 
@@ -94,35 +87,29 @@
                             {
                                 <div class="item">
                                     <div class="item-content">
-                                        <div class="item-info">
-                                            @if (!string.IsNullOrEmpty(item.ImagemUrl))
+                                        <div class="item-nome">@item.Nome</div>
+                                        <div class="item-meta">@item.DataAdicao.ToString("dd/MM/yyyy")</div>
+                                        <div class="item-links">
+                                            @foreach (var link in item.Links.Select((l, i) => new { Link = l, Index = i }))
                                             {
-                                                <img src="@item.ImagemUrl" alt="" class="item-img" loading="lazy" onerror="this.style.display='none'">
-                                            }
-                                            <div>
-                                                <div class="item-nome">@item.Nome</div>
-                                                <div class="item-meta">@item.DataAdicao.ToString("dd/MM/yyyy")</div>
-                                            </div>
-                                        </div>
-                                        @if (item.Links.Count > 0)
-                                        {
-                                            var primeiro = true;
-                                            <div class="item-links">
-                                                @foreach (var link in item.Links.OrderBy(l => l.Preco ?? decimal.MaxValue))
-                                                {
-                                                    var isCheaper = link.Preco.HasValue && primeiro;
-                                                    if (link.Preco.HasValue) primeiro = false;
-                                                    <a href="@link.Url" target="_blank" rel="noopener" class="link-btn @(isCheaper ? "link-btn-best" : "")">
-                                                        @(!string.IsNullOrEmpty(link.Loja) ? link.Loja : "Link")
-                                                        @if (link.Preco.HasValue)
-                                                        {
-                                                            <span class="link-preco">@($"R$ {link.Preco:0.00}")</span>
-                                                        }
-                                                        ↗
+                                                <div class="link-item">
+                                                    <a href="@link.Link.Url" target="_blank" rel="noopener" class="link-btn">
+                                                        @(!string.IsNullOrEmpty(link.Link.Loja) ? link.Link.Loja : "Link") ↗
                                                     </a>
-                                                }
-                                            </div>
-                                        }
+                                                    <form method="post" action="/Home/RemoverLink" style="display:inline">
+                                                        <input type="hidden" name="id" value="@item.Id">
+                                                        <input type="hidden" name="linkIndex" value="@link.Index">
+                                                        <button type="submit" class="link-remove" title="Remover link">&times;</button>
+                                                    </form>
+                                                </div>
+                                            }
+                                            <form class="add-link-form" method="post" action="/Home/AdicionarLink">
+                                                <input type="hidden" name="id" value="@item.Id">
+                                                <input type="text" name="loja" placeholder="Loja" class="input-loja-sm">
+                                                <input type="url" name="url" placeholder="Link" required class="input-url-sm">
+                                                <button type="submit" class="btn-link-add">+</button>
+                                            </form>
+                                        </div>
                                     </div>
                                     <div class="item-actions">
                                         <form method="post" action="/Home/ToggleComprado" style="display:inline">
@@ -159,16 +146,8 @@
                             {
                                 <div class="item item-comprado">
                                     <div class="item-content">
-                                        <div class="item-info">
-                                            @if (!string.IsNullOrEmpty(item.ImagemUrl))
-                                            {
-                                                <img src="@item.ImagemUrl" alt="" class="item-img" loading="lazy" onerror="this.style.display='none'">
-                                            }
-                                            <div>
-                                                <div class="item-nome"><s>@item.Nome</s></div>
-                                                <div class="item-meta">@item.DataAdicao.ToString("dd/MM/yyyy")</div>
-                                            </div>
-                                        </div>
+                                        <div class="item-nome"><s>@item.Nome</s></div>
+                                        <div class="item-meta">@item.DataAdicao.ToString("dd/MM/yyyy")</div>
                                     </div>
                                     <div class="item-actions">
                                         <form method="post" action="/Home/ToggleComprado" style="display:inline">

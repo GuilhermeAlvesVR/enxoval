@@ -47,7 +47,6 @@ using (var scope = app.Services.CreateScope())
             CONSTRAINT "PK_Categorias" PRIMARY KEY ("Id")
         );
         ALTER TABLE "Desejos" ADD COLUMN IF NOT EXISTS "CategoriaId" integer NULL;
-        ALTER TABLE "Desejos" ADD COLUMN IF NOT EXISTS "ImagemUrl" text NULL;
     """);
 
     if (!db.Categorias.Any())
