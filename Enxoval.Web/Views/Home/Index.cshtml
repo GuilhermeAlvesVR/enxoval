@@ -21,6 +21,10 @@
         </div>
 
         <div class="form-row">
+            <input type="url" name="imagemUrl" placeholder="Link da imagem (opcional)" class="input-full">
+        </div>
+
+        <div class="form-row">
             <select name="categoriaId" class="input-full">
                 <option value="">Sem categoria</option>
                 @foreach (var cat in categorias)
@@ -90,8 +94,16 @@
                             {
                                 <div class="item">
                                     <div class="item-content">
-                                        <div class="item-nome">@item.Nome</div>
-                                        <div class="item-meta">@item.DataAdicao.ToString("dd/MM/yyyy")</div>
+                                        <div class="item-info">
+                                            @if (!string.IsNullOrEmpty(item.ImagemUrl))
+                                            {
+                                                <img src="@item.ImagemUrl" alt="" class="item-img" loading="lazy" onerror="this.style.display='none'">
+                                            }
+                                            <div>
+                                                <div class="item-nome">@item.Nome</div>
+                                                <div class="item-meta">@item.DataAdicao.ToString("dd/MM/yyyy")</div>
+                                            </div>
+                                        </div>
                                         @if (item.Links.Count > 0)
                                         {
                                             var primeiro = true;
@@ -147,8 +159,16 @@
                             {
                                 <div class="item item-comprado">
                                     <div class="item-content">
-                                        <div class="item-nome"><s>@item.Nome</s></div>
-                                        <div class="item-meta">@item.DataAdicao.ToString("dd/MM/yyyy")</div>
+                                        <div class="item-info">
+                                            @if (!string.IsNullOrEmpty(item.ImagemUrl))
+                                            {
+                                                <img src="@item.ImagemUrl" alt="" class="item-img" loading="lazy" onerror="this.style.display='none'">
+                                            }
+                                            <div>
+                                                <div class="item-nome"><s>@item.Nome</s></div>
+                                                <div class="item-meta">@item.DataAdicao.ToString("dd/MM/yyyy")</div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="item-actions">
                                         <form method="post" action="/Home/ToggleComprado" style="display:inline">

@@ -19,6 +19,8 @@ public class Desejo
     public DateTime DataAdicao { get; set; } = DateTime.UtcNow;
     public bool Comprado { get; set; }
 
+    public string? ImagemUrl { get; set; }
+
     public int? CategoriaId { get; set; }
     public Categoria? Categoria { get; set; }
 

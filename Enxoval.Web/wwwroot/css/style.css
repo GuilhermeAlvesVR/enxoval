@@ -245,6 +245,21 @@ body {
 
 .item-content { flex: 1; min-width: 0; }
 
+.item-info {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.item-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: var(--bg);
+}
+
 .item-nome {
   font-size: 15px;
   font-weight: 600;

@@ -22,7 +22,7 @@ public class HomeController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Adicionar(string nome, int? categoriaId, string loja1, string url1, string preco1, string loja2, string url2, string preco2, string loja3, string url3, string preco3)
+    public async Task<IActionResult> Adicionar(string nome, int? categoriaId, string imagemUrl, string loja1, string url1, string preco1, string loja2, string url2, string preco2, string loja3, string url3, string preco3)
     {
         if (string.IsNullOrWhiteSpace(nome)) return RedirectToAction("Index");
 
@@ -36,7 +36,8 @@ public class HomeController : Controller
             Nome = nome.Trim(),
             Links = links.OrderBy(l => l.Preco ?? decimal.MaxValue).ToList(),
             DataAdicao = DateTime.UtcNow,
-            CategoriaId = categoriaId
+            CategoriaId = categoriaId,
+            ImagemUrl = string.IsNullOrWhiteSpace(imagemUrl) ? null : imagemUrl.Trim()
         };
 
         _db.Desejos.Add(desejo);
