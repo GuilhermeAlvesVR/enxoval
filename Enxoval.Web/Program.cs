@@ -10,6 +10,7 @@ if (!string.IsNullOrEmpty(databaseUrl))
 {
     var uri = new Uri(databaseUrl);
     var userInfo = uri.UserInfo.Split(':');
+    var endpointId = uri.Host.Split('.')[0];
     try
     {
         var entry = System.Net.Dns.GetHostEntry(uri.Host, System.Net.Sockets.AddressFamily.InterNetwork);
@@ -22,7 +23,8 @@ if (!string.IsNullOrEmpty(databaseUrl))
         Database = uri.AbsolutePath.TrimStart('/'),
         Username = userInfo[0],
         Password = userInfo[1],
-        SslMode = Npgsql.SslMode.Require
+        SslMode = Npgsql.SslMode.Require,
+        Options = $"endpoint={endpointId}"
     };
     if (uri.Port > 0) builder_.Port = uri.Port;
     var connString = builder_.ConnectionString;
