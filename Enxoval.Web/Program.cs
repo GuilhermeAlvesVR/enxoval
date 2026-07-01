@@ -10,9 +10,11 @@ if (!string.IsNullOrEmpty(databaseUrl))
 {
     var uri = new Uri(databaseUrl);
     var userInfo = uri.UserInfo.Split(':');
+    var addresses = System.Net.Dns.GetHostAddresses(uri.Host);
+    var ipv4 = addresses.FirstOrDefault(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
     var connString = new Npgsql.NpgsqlConnectionStringBuilder
     {
-        Host = uri.Host,
+        Host = ipv4?.ToString() ?? uri.Host,
         Port = uri.Port,
         Database = uri.AbsolutePath.TrimStart('/'),
         Username = userInfo[0],
