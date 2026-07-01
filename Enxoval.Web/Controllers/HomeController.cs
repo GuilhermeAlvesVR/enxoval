@@ -12,16 +12,17 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var itens = await _db.Desejos.OrderByDescending(d => d.DataAdicao).ToListAsync();
+        var itens = await _db.Desejos.Include(d => d.Categoria).OrderByDescending(d => d.DataAdicao).ToListAsync();
         foreach (var item in itens)
         {
             item.Links = item.Links.OrderBy(l => l.Preco ?? decimal.MaxValue).ToList();
         }
+        ViewBag.Categorias = await _db.Categorias.OrderBy(c => c.Ordem).ThenBy(c => c.Nome).ToListAsync();
         return View(itens);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Adicionar(string nome, string loja1, string url1, string preco1, string loja2, string url2, string preco2, string loja3, string url3, string preco3)
+    public async Task<IActionResult> Adicionar(string nome, int? categoriaId, string loja1, string url1, string preco1, string loja2, string url2, string preco2, string loja3, string url3, string preco3)
     {
         if (string.IsNullOrWhiteSpace(nome)) return RedirectToAction("Index");
 
@@ -34,7 +35,8 @@ public class HomeController : Controller
         {
             Nome = nome.Trim(),
             Links = links.OrderBy(l => l.Preco ?? decimal.MaxValue).ToList(),
-            DataAdicao = DateTime.UtcNow
+            DataAdicao = DateTime.UtcNow,
+            CategoriaId = categoriaId
         };
 
         _db.Desejos.Add(desejo);

@@ -1,8 +1,11 @@
 @model List<Desejo>
 @{
     ViewData["Title"] = "Nossa Lista";
+    var categorias = (List<Categoria>)ViewBag.Categorias;
     var pendentes = Model.Where(d => !d.Comprado).ToList();
     var comprados = Model.Where(d => d.Comprado).ToList();
+    var pendentesPorCat = pendentes.GroupBy(d => d.Categoria?.Nome ?? "Sem categoria").OrderBy(g => g.Key == "Sem categoria" ? 1 : 0).ThenBy(g => g.Key).ToList();
+    var compradosPorCat = comprados.GroupBy(d => d.Categoria?.Nome ?? "Sem categoria").OrderBy(g => g.Key == "Sem categoria" ? 1 : 0).ThenBy(g => g.Key).ToList();
     var total = Model.Count;
     var progresso = total > 0 ? (comprados.Count * 100 / total) : 0;
 }
@@ -15,6 +18,16 @@
     <form class="add-form" method="post" action="/Home/Adicionar">
         <div class="form-row">
             <input type="text" name="nome" placeholder="O que você quer?" required class="input-full">
+        </div>
+
+        <div class="form-row">
+            <select name="categoriaId" class="input-full">
+                <option value="">Sem categoria</option>
+                @foreach (var cat in categorias)
+                {
+                    <option value="@cat.Id">@cat.Nome</option>
+                }
+            </select>
         </div>
 
         <div class="links-group">
@@ -68,50 +81,56 @@
         {
             <div class="list-section">
                 <div class="list-section-title">Pendentes</div>
-                <div class="lista">
-                    @foreach (var item in pendentes)
-                    {
-                        <div class="item">
-                            <div class="item-content">
-                                <div class="item-nome">@item.Nome</div>
-                                <div class="item-meta">@item.DataAdicao.ToString("dd/MM/yyyy")</div>
-                                @if (item.Links.Count > 0)
-                                {
-                                    var primeiro = true;
-                                    <div class="item-links">
-                                        @foreach (var link in item.Links.OrderBy(l => l.Preco ?? decimal.MaxValue))
+                @foreach (var grupo in pendentesPorCat)
+                {
+                    <div class="cat-group">
+                        <div class="cat-group-title">@grupo.Key</div>
+                        <div class="lista">
+                            @foreach (var item in grupo)
+                            {
+                                <div class="item">
+                                    <div class="item-content">
+                                        <div class="item-nome">@item.Nome</div>
+                                        <div class="item-meta">@item.DataAdicao.ToString("dd/MM/yyyy")</div>
+                                        @if (item.Links.Count > 0)
                                         {
-                                            var isCheaper = link.Preco.HasValue && primeiro;
-                                            if (link.Preco.HasValue) primeiro = false;
-                                            <a href="@link.Url" target="_blank" rel="noopener" class="link-btn @(isCheaper ? "link-btn-best" : "")">
-                                                @(!string.IsNullOrEmpty(link.Loja) ? link.Loja : "Link")
-                                                @if (link.Preco.HasValue)
+                                            var primeiro = true;
+                                            <div class="item-links">
+                                                @foreach (var link in item.Links.OrderBy(l => l.Preco ?? decimal.MaxValue))
                                                 {
-                                                    <span class="link-preco">@($"R$ {link.Preco:0.00}")</span>
+                                                    var isCheaper = link.Preco.HasValue && primeiro;
+                                                    if (link.Preco.HasValue) primeiro = false;
+                                                    <a href="@link.Url" target="_blank" rel="noopener" class="link-btn @(isCheaper ? "link-btn-best" : "")">
+                                                        @(!string.IsNullOrEmpty(link.Loja) ? link.Loja : "Link")
+                                                        @if (link.Preco.HasValue)
+                                                        {
+                                                            <span class="link-preco">@($"R$ {link.Preco:0.00}")</span>
+                                                        }
+                                                        ↗
+                                                    </a>
                                                 }
-                                                ↗
-                                            </a>
+                                            </div>
                                         }
                                     </div>
-                                }
-                            </div>
-                            <div class="item-actions">
-                                <form method="post" action="/Home/ToggleComprado" style="display:inline">
-                                    <input type="hidden" name="id" value="@item.Id">
-                                    <button type="submit" class="btn-icon btn-check" title="Marcar como comprado">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                    </button>
-                                </form>
-                                <form method="post" action="/Home/Remover" style="display:inline" onsubmit="return confirm('Remover este item?')">
-                                    <input type="hidden" name="id" value="@item.Id">
-                                    <button type="submit" class="btn-icon btn-trash" title="Remover">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                    </button>
-                                </form>
-                            </div>
+                                    <div class="item-actions">
+                                        <form method="post" action="/Home/ToggleComprado" style="display:inline">
+                                            <input type="hidden" name="id" value="@item.Id">
+                                            <button type="submit" class="btn-icon btn-check" title="Marcar como comprado">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                            </button>
+                                        </form>
+                                        <form method="post" action="/Home/Remover" style="display:inline" onsubmit="return confirm('Remover este item?')">
+                                            <input type="hidden" name="id" value="@item.Id">
+                                            <button type="submit" class="btn-icon btn-trash" title="Remover">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            }
                         </div>
-                    }
-                </div>
+                    </div>
+                }
             </div>
         }
 
@@ -119,31 +138,37 @@
         {
             <div class="list-section" style="margin-top:24px">
                 <div class="list-section-title">Comprados</div>
-                <div class="lista">
-                    @foreach (var item in comprados)
-                    {
-                        <div class="item item-comprado">
-                            <div class="item-content">
-                                <div class="item-nome"><s>@item.Nome</s></div>
-                                <div class="item-meta">@item.DataAdicao.ToString("dd/MM/yyyy")</div>
-                            </div>
-                            <div class="item-actions">
-                                <form method="post" action="/Home/ToggleComprado" style="display:inline">
-                                    <input type="hidden" name="id" value="@item.Id">
-                                    <button type="submit" class="btn-icon" title="Desmarcar">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-                                    </button>
-                                </form>
-                                <form method="post" action="/Home/Remover" style="display:inline" onsubmit="return confirm('Remover este item?')">
-                                    <input type="hidden" name="id" value="@item.Id">
-                                    <button type="submit" class="btn-icon btn-trash" title="Remover">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                    </button>
-                                </form>
-                            </div>
+                @foreach (var grupo in compradosPorCat)
+                {
+                    <div class="cat-group">
+                        <div class="cat-group-title">@grupo.Key</div>
+                        <div class="lista">
+                            @foreach (var item in grupo)
+                            {
+                                <div class="item item-comprado">
+                                    <div class="item-content">
+                                        <div class="item-nome"><s>@item.Nome</s></div>
+                                        <div class="item-meta">@item.DataAdicao.ToString("dd/MM/yyyy")</div>
+                                    </div>
+                                    <div class="item-actions">
+                                        <form method="post" action="/Home/ToggleComprado" style="display:inline">
+                                            <input type="hidden" name="id" value="@item.Id">
+                                            <button type="submit" class="btn-icon" title="Desmarcar">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                                            </button>
+                                        </form>
+                                        <form method="post" action="/Home/Remover" style="display:inline" onsubmit="return confirm('Remover este item?')">
+                                            <input type="hidden" name="id" value="@item.Id">
+                                            <button type="submit" class="btn-icon btn-trash" title="Remover">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            }
                         </div>
-                    }
-                </div>
+                    </div>
+                }
             </div>
         }
     }

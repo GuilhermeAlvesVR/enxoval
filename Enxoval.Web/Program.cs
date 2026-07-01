@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Enxoval.Web.Data;
+using Enxoval.Web.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +45,18 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
+    if (!db.Categorias.Any())
+    {
+        db.Categorias.AddRange(
+            new Categoria { Nome = "Cozinha", Ordem = 1 },
+            new Categoria { Nome = "Sala de Estar", Ordem = 2 },
+            new Categoria { Nome = "Quarto", Ordem = 3 },
+            new Categoria { Nome = "Banheiro", Ordem = 4 },
+            new Categoria { Nome = "Eletrodomésticos", Ordem = 5 },
+            new Categoria { Nome = "Decoração", Ordem = 6 }
+        );
+        db.SaveChanges();
+    }
 }
 
 app.UseStaticFiles();
